@@ -56,9 +56,6 @@ pipeline {
                 sh "npm run test:ci"
              }
              post {
-                always {
-                    junit 'dist/junit/junit.xml'
-                }
                 success {
                     echo "Unit test success"
                 }
@@ -66,6 +63,25 @@ pipeline {
                     echo "Unit test failure"
                 }
              }
+        }
+
+        stage ("Report") {
+            steps {
+                clover(cloverReportDir: '../dist/coverage', cloverReportFileName: 'clover.xml',
+                  healthyTarget: [methodCoverage: 70, conditionalCoverage: 80, statementCoverage: 80],
+                  unhealthyTarget: [methodCoverage: 50, conditionalCoverage: 50, statementCoverage: 50],
+                  failingTarget: [methodCoverage: 25, conditionalCoverage: 25, statementCoverage: 25]
+                )
+                junit 'dist/junit/junit.xml'
+            }
+            post {
+                success {
+                    echo "Repot success"
+                }
+                failure {
+                    echo "Report failure"
+                }
+            }
         }
 
         stage ("Publish to Docker Hub") {
