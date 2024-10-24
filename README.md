@@ -1,5 +1,16 @@
 # TPLT | Node Server
 
+## Setup
+#### package.json
+- update project name
+- update project description
+
+#### build.mjs
+- update debug statement in define to match project name: 'process.env.DEBUG': JSON.stringify('<project-name>:*'),
+
+#### Jenkinsfile
+- update project name in the build configuration section: $DOCKER_IMAGE:<project-name>
+
 ## Running the produced docker image on the target machine
 
 - pull the docker image onto the target machine `docker pull <docker hub username>/<docker hub repository>:<project tag>`
