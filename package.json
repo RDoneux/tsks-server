@@ -1,7 +1,7 @@
 {
-  "name": "tplt-node-server",
+  "name": "tsks-server",
   "version": "0.0.0",
-  "description": "node js express server template",
+  "description": "backend service for tasks",
   "main": "index.js",
   "type": "commonjs",
   "scripts": {
