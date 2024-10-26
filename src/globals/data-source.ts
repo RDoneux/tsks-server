@@ -4,6 +4,7 @@ dotenv.config();
 import { DataSource } from 'typeorm';
 import { testDataSource } from '../__e2e_tests__/test-utils';
 import { Example } from '../entities/example.entity';
+import Board from '../entities/board/board.entity';
 
 const _dataSource = new DataSource({
   type: 'mysql',
@@ -14,7 +15,7 @@ const _dataSource = new DataSource({
   database: process.env.DS_DATABASE,
   // entities: ['*.entity.{js,ts}'],
   // entities: ["src/entities/*{.js,.ts}"],
-  entities: [Example],
+  entities: [Example, Board],
   migrations: ['src/resources/migrations/*.ts'],
   logging: true,
   synchronize: false,
