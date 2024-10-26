@@ -27,6 +27,7 @@ async function getBoardById(request: Request, response: Response) {
     const result: Board | null = await BoardRepository.findOne({ where: { id } });
     if (!result) {
       response.status(404).json(`Board with id '${id}' not found`);
+      return;
     }
     response.status(200).json(result);
   } catch (error) {
@@ -76,7 +77,7 @@ async function deleteBoard(request: Request, response: Response) {
     const deleteResult: DeleteResult = await BoardRepository.delete(id);
 
     if (!deleteResult.affected) {
-      response.status(404).json(`Board with id '${id} not found`);
+      response.status(404).json(`Board with id '${id}' not found`);
       return;
     }
 
