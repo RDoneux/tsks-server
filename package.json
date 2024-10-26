@@ -15,7 +15,7 @@
     "prettier": "npx prettier . --write",
     "prettier:ci": "npx prettier . --check",
     "test": "jest",
-    "test:ci": "jest --ci --coverage --coverageDirectory=dist/coverage",
+    "test:ci": "jest --ci --coverage --coverageDirectory=dist/coverage --run-in-band",
     "database:migrate": "npx typeorm-ts-node-commonjs migration:run -d ./src/globals/data-source.ts",
     "database:revert": "npx typeorm-ts-node-commonjs migration:revert -d ./src/globals/data-source.ts"
   },
