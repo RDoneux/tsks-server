@@ -5,6 +5,7 @@ import { DataSource } from 'typeorm';
 import { testDataSource } from './test-utils';
 import { Example } from '../entities/example.entity';
 import Board from '../entities/board/board.entity';
+import BoardColumn from '../entities/board-columns/BoardColumn.entity';
 
 const _dataSource = new DataSource({
   type: 'mysql',
@@ -15,7 +16,7 @@ const _dataSource = new DataSource({
   database: process.env.DS_DATABASE,
   // entities: ['*.entity.{js,ts}'],
   // entities: ["src/entities/*{.js,.ts}"],
-  entities: [Example, Board],
+  entities: [Example, Board, BoardColumn],
   migrations: ['src/resources/migrations/*.ts'],
   logging: true,
   synchronize: false,

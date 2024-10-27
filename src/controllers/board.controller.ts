@@ -38,7 +38,7 @@ async function getBoardById(request: Request, response: Response) {
 async function createBoard(request: Request, response: Response) {
   try {
     const missingFields = validateRequiredFields(Board, request.body);
-    if (missingFields.length) {
+    if (missingFields) {
       response
         .status(400)
         .json(`Creating a Board requires the following mandatory fields: ${missingFields}`);
