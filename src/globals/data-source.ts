@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import { DataSource } from 'typeorm';
-import { testDataSource } from '../__e2e_tests__/test-utils';
+import { testDataSource } from './test-utils';
 import { Example } from '../entities/example.entity';
 import Board from '../entities/board/board.entity';
 

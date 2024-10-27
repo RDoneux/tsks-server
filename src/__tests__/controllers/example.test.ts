@@ -1,8 +1,8 @@
 import request, { Response } from 'supertest';
-import { application, server } from '..';
-import { prepareDataSource, teardownDataSource } from './test-utils';
-import { Example } from '../entities/example.entity';
-import { dataSource } from '../globals/data-source';
+import { application, server } from '../..';
+import { prepareDataSource, teardownDataSource } from '../../globals/test-utils';
+import { Example } from '../../entities/example.entity';
+import { dataSource } from '../../globals/data-source';
 
 describe('example', () => {
   beforeEach(async () => {

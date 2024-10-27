@@ -1,7 +1,7 @@
-export default class BaseEntity {
+export default abstract class BaseEntity {
   // used by the required decorator to list required fields
-  static requiredFields: string[] = [];
   static getRequiredFields(): string[] {
-    return this.requiredFields || [];
+    /* eslint-disable  @typescript-eslint/no-explicit-any */
+    return (this as any).requiredFields || [];
   }
 }

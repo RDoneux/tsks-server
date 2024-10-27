@@ -1,7 +1,7 @@
 import request, { Response } from 'supertest';
 import { application, server } from '../..';
 import { dataSource } from '../../globals/data-source';
-import { prepareDataSource, teardownDataSource } from '../test-utils';
+import { prepareDataSource, teardownDataSource } from '../../globals/test-utils';
 import Board from '../../entities/board/board.entity';
 import { BoardRepository } from '../../repositories/board.repository';
 
