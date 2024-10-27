@@ -4,7 +4,7 @@ export const testDataSource = new DataSource({
   type: 'sqlite',
   database: ':memory:', // Use in-memory database for faster tests
   synchronize: true, // Automatically synchronize the database with your entities
-  entities: ['src/entities/*.ts'],
+  entities: ['src/entities/**/*.ts'],
 });
 
 export async function prepareDataSource(dataSource: DataSource) {
