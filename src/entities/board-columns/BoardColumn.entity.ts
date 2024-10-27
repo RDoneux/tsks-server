@@ -1,19 +1,20 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import BaseEntity from '../base-entity';
 import { Required } from '../../decorators/required.decorator';
-import BoardColumn from '../board-columns/BoardColumn.entity';
+import Board from '../board/board.entity';
 
-@Entity({ name: 'boards' })
-export default class Board extends BaseEntity {
+@Entity({ name: 'columns' })
+export default class BoardColumn extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ name: 'board_name', type: 'varchar' })
+  @Column({ name: 'column_name', type: 'varchar' })
   @Required()
-  boardName!: string;
+  columnName!: string;
 
-  @OneToMany(() => BoardColumn, (boardColumn) => boardColumn.board)
-  columns!: BoardColumn[];
+  @ManyToOne(() => Board, (board) => board.columns, { cascade: true })
+  @JoinColumn({ name: 'board_id' })
+  board!: Board;
 
   @Column({ name: 'created_at', type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   createdAt!: Date;

@@ -8,6 +8,7 @@ import { errorLog, infoLog } from './globals/logging-globals';
 import { dataSource } from './globals/data-source';
 import exampleController from './controllers/example.controller';
 import boardController from './controllers/board.controller';
+import boardColumnController from './controllers/board-column.controller';
 
 export const environment = process.env.NODE_ENV || 'development';
 console.log(
@@ -28,6 +29,7 @@ application.use(express.json());
 application.use(actuatorController);
 application.use(exampleController);
 application.use('/boards', boardController);
+application.use('/columns', boardColumnController);
 
 // root endpoints
 application.use((request: Request, response: Response) => {
