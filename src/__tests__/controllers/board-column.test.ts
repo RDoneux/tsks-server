@@ -1,214 +1,217 @@
-import request, { Response } from "supertest"
-import { application, server } from "../.."
-import { prepareDataSource, teardownDataSource } from "../../globals/test-utils";
-import { dataSource } from "../../globals/data-source";
-import BoardColumn from "../../entities/board-columns/BoardColumn.entity";
-import { BoardColumnRepository } from "../../repositories/board-column.repository";
+import request, { Response } from 'supertest';
+import { application, server } from '../..';
+import { prepareDataSource, teardownDataSource } from '../../globals/test-utils';
+import { dataSource } from '../../globals/data-source';
+import BoardColumn from '../../entities/board-columns/BoardColumn.entity';
+import { BoardColumnRepository } from '../../repositories/board-column.repository';
 
 describe('Board Column', () => {
+  describe('get all columns', () => {
+    beforeEach(async () => {
+      await prepareDataSource(dataSource);
+    });
 
-    describe('get all columns', () => {
+    afterAll(async () => {
+      server.close();
+      await teardownDataSource(dataSource);
+    });
 
-        beforeEach(async () => {
-            await prepareDataSource(dataSource);
-        });
+    it('should return 200 OK with empty array if there are no results found', async () => {
+      const response: Response = await request(application).get('/columns');
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual([]);
+    });
 
-        afterAll(async () => {
-            server.close();
-            await teardownDataSource(dataSource);
-        });
+    it('should return 200 OK with results if there are results', async () => {
+      const testColumn: BoardColumn = new BoardColumn();
+      testColumn.columnName = 'test-column-name';
 
-        it('should return 200 OK with empty array if there are no results found', async () => {
-            const response: Response = await request(application).get('/columns');
-            expect(response.status).toBe(200);
-            expect(response.body).toEqual([]);
-        })
+      const savedColumn: BoardColumn = await BoardColumnRepository.save(testColumn);
 
-        it('should return 200 OK with results if there are results', async () => {
-            const testColumn: BoardColumn = new BoardColumn();
-            testColumn.columnName = 'test-column-name';
+      const response: Response = await request(application).get('/columns');
+      expect(response.status).toBe(200);
+      const responseBody = response.body;
+      expect(responseBody.length).toBe(1);
+      expect(responseBody[0].columnName).toEqual(savedColumn.columnName);
+      expect(responseBody[0].id).toEqual(savedColumn.id);
+    });
+  });
 
-            const savedColumn: BoardColumn = await BoardColumnRepository.save(testColumn);
+  describe('get column by id', () => {
+    beforeEach(async () => {
+      await prepareDataSource(dataSource);
+    });
 
-            const response: Response = await request(application).get('/columns');
-            expect(response.status).toBe(200);
-            const responseBody = response.body;
-            expect(responseBody.length).toBe(1);
-            expect(responseBody[0].columnName).toEqual(savedColumn.columnName);
-            expect(responseBody[0].id).toEqual(savedColumn.id);
-        })
+    afterAll(async () => {
+      server.close();
+      await teardownDataSource(dataSource);
+    });
 
-    })
+    it('should return 404 NOT FOUND if column does not exist', async () => {
+      const id: string = 'd27c1c5e-cb79-4a54-a250-0fd285732b74';
+      const response: Response = await request(application).get(`/columns/${id}`);
 
-    describe('get column by id', () => {
+      expect(response.status).toBe(404);
+      expect(response.body).toEqual(`Column with id '${id}' not found`);
+    });
 
-        beforeEach(async () => {
-            await prepareDataSource(dataSource);
-        });
+    it('should return 200 OK with result if found', async () => {
+      const testColumn: BoardColumn = new BoardColumn();
+      testColumn.columnName = 'test-column-name';
 
-        afterAll(async () => {
-            server.close();
-            await teardownDataSource(dataSource);
-        });
+      const savedColumn: BoardColumn = await BoardColumnRepository.save(testColumn);
+      const response: Response = await request(application).get(`/columns/${savedColumn.id}`);
 
-        it('should return 404 NOT FOUND if column does not exist', async () => {
-            const id: string = 'd27c1c5e-cb79-4a54-a250-0fd285732b74';
-            const response: Response = await request(application).get(`/columns/${id}`);
+      expect(response.status).toBe(200);
+      const result: BoardColumn = response.body;
+      expect(result.id).toEqual(savedColumn.id);
+      expect(result.columnName).toEqual(savedColumn.columnName);
+    });
+  });
 
-            expect(response.status).toBe(404);
-            expect(response.body).toEqual(`Column with id '${id}' not found`);
-        })
+  describe('create column', () => {
+    beforeEach(async () => {
+      await prepareDataSource(dataSource);
+    });
 
-        it('should return 200 OK with result if found', async () => {
-            const testColumn: BoardColumn = new BoardColumn();
-            testColumn.columnName = 'test-column-name';
+    afterAll(async () => {
+      server.close();
+      await teardownDataSource(dataSource);
+    });
 
-            const savedColumn: BoardColumn = await BoardColumnRepository.save(testColumn);
-            const response: Response = await request(application).get(`/columns/${savedColumn.id}`);
+    it('should return 400 MALFORMED REQUEST if request is missing mandatory fields', async () => {
+      const response: Response = await request(application).post('/columns').send({});
 
-            expect(response.status).toBe(200);
-            const result: BoardColumn = response.body;
-            expect(result.id).toEqual(savedColumn.id);
-            expect(result.columnName).toEqual(savedColumn.columnName);
-        })
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual(
+        'Creating a Column requires the following mandatory fields: columnName'
+      );
+    });
 
-    })
+    it('should return 201 CREATED if column is created successfully', async () => {
+      const columnToSave: BoardColumn = new BoardColumn();
+      columnToSave.columnName = 'test-column-name';
 
-    describe('create column', () => {
+      const response: Response = await request(application).post('/columns').send(columnToSave);
 
-        beforeEach(async () => {
-            await prepareDataSource(dataSource);
-        });
+      expect(response.status).toEqual(201);
+      expect(response.body.columnName).toEqual(columnToSave.columnName);
+    });
 
-        afterAll(async () => {
-            server.close();
-            await teardownDataSource(dataSource);
-        });
+    it('should save resource in database', async () => {
+      const columnToSave: BoardColumn = new BoardColumn();
+      columnToSave.columnName = 'test-column-name';
 
-        it('should return 400 MALFORMED REQUEST if request is missing mandatory fields', async () => {
+      const response: Response = await request(application).post('/columns').send(columnToSave);
 
-            const response: Response = await request(application).post('/columns').send({});
+      expect(response.status).toEqual(201);
 
-            expect(response.status).toBe(400);
-            expect(response.body).toEqual('Creating a Column requires the following mandatory fields: columnName');
-        })
+      const savedResponse: BoardColumn | null = await BoardColumnRepository.findOne({
+        where: { id: response.body.id },
+      });
 
-        it('should return 201 CREATED if column is created successfully', async () => {
-            const columnToSave: BoardColumn = new BoardColumn();
-            columnToSave.columnName = 'test-column-name';
+      expect(savedResponse).toBeDefined();
+      expect(savedResponse?.columnName).toEqual(columnToSave.columnName);
+    });
+  });
 
-            const response: Response = await request(application).post('/columns').send(columnToSave);
+  describe('update column', () => {
+    beforeEach(async () => {
+      await prepareDataSource(dataSource);
+    });
 
-            expect(response.status).toEqual(201);
-            expect(response.body.columnName).toEqual(columnToSave.columnName);
-        })
+    afterAll(async () => {
+      server.close();
+      await teardownDataSource(dataSource);
+    });
 
-        it('should save resource in database', async () => {
-            const columnToSave: BoardColumn = new BoardColumn();
-            columnToSave.columnName = 'test-column-name';
+    it('should return 404 NOT FOUND if column is not found', async () => {
+      const id: string = '6707ee77-900c-4973-bac9-a90a02256d81';
+      const response: Response = await request(application)
+        .put(`/columns/${id}`)
+        .send({ columnName: 'test-column-name' });
 
-            const response: Response = await request(application).post('/columns').send(columnToSave);
+      expect(response.status).toBe(404);
+      expect(response.body).toEqual(`Column with id '${id}' not found`);
+    });
 
-            expect(response.status).toEqual(201);
+    it('should return 200 OK with update result and update column information', async () => {
+      const columnToUpdate: BoardColumn = new BoardColumn();
+      columnToUpdate.columnName = 'origional-column-name';
 
-            const savedResponse: BoardColumn | null = await BoardColumnRepository.findOne({ where: { id: response.body.id } });
+      const savedColumn: BoardColumn = await BoardColumnRepository.save(columnToUpdate);
 
-            expect(savedResponse).toBeDefined();
-            expect(savedResponse?.columnName).toEqual(columnToSave.columnName);
-        })
+      const response: Response = await request(application)
+        .put(`/columns/${savedColumn.id}`)
+        .send({ columnName: 'updated-column-name' });
 
-    })
+      expect(response.status).toBe(200);
+      expect(response.body.updateResult.affected).toBe(1);
+      expect(response.body.updatedColumn.id).toEqual(savedColumn.id);
+      expect(response.body.updatedColumn.columnName).toEqual('updated-column-name');
+    });
 
-    describe('update column', () => {
+    it('should update value in database', async () => {
+      const columnToUpdate: BoardColumn = new BoardColumn();
+      columnToUpdate.columnName = 'origional-column-name';
 
-        beforeEach(async () => {
-            await prepareDataSource(dataSource);
-        });
+      const savedColumn: BoardColumn = await BoardColumnRepository.save(columnToUpdate);
 
-        afterAll(async () => {
-            server.close();
-            await teardownDataSource(dataSource);
-        });
+      const response: Response = await request(application)
+        .put(`/columns/${savedColumn.id}`)
+        .send({ columnName: 'updated-column-name' });
 
-        it('should return 404 NOT FOUND if column is not found', async () => {
-            const id: string = '6707ee77-900c-4973-bac9-a90a02256d81';
-            const response: Response = await request(application).put(`/columns/${id}`).send({ columnName: 'test-column-name' })
+      expect(response.status).toBe(200);
+      const columnInDatabase: BoardColumn | null = await BoardColumnRepository.findOne({
+        where: { id: savedColumn.id },
+      });
+      expect(columnInDatabase).toBeDefined();
+      expect(columnInDatabase?.columnName).toEqual('updated-column-name');
+    });
+  });
 
-            expect(response.status).toBe(404);
-            expect(response.body).toEqual(`Column with id '${id}' not found`);
-        })
+  describe('delete column', () => {
+    beforeEach(async () => {
+      await prepareDataSource(dataSource);
+    });
 
-        it('should return 200 OK with update result and update column information', async () => {
-            const columnToUpdate: BoardColumn = new BoardColumn();
-            columnToUpdate.columnName = 'origional-column-name';
+    afterAll(async () => {
+      server.close();
+      await teardownDataSource(dataSource);
+    });
 
-            const savedColumn: BoardColumn = await BoardColumnRepository.save(columnToUpdate);
+    it('should return 404 if column is not found', async () => {
+      const id: string = 'a6361ac6-2ea0-4f66-98ee-0eea80ff3e73';
+      const response: Response = await request(application)
+        .delete(`/columns/${id}`)
+        .send({ columnName: 'test-column-name' });
 
-            const response: Response = await request(application).put(`/columns/${savedColumn.id}`).send({ columnName: 'updated-column-name' });
+      expect(response.status).toBe(404);
+      expect(response.body).toEqual(`Column with id '${id}' not found`);
+    });
 
-            expect(response.status).toBe(200);
-            expect(response.body.updateResult.affected).toBe(1);
-            expect(response.body.updatedColumn.id).toEqual(savedColumn.id);
-            expect(response.body.updatedColumn.columnName).toEqual('updated-column-name');
-        })
+    it('should return 204 NO CONTENT if request is deleted successfully', async () => {
+      const columnToDelete: BoardColumn = new BoardColumn();
+      columnToDelete.columnName = 'origional-column-name';
 
-        it('should update value in database', async () => {
-            const columnToUpdate: BoardColumn = new BoardColumn();
-            columnToUpdate.columnName = 'origional-column-name';
+      const savedColumn: BoardColumn = await BoardColumnRepository.save(columnToDelete);
+      const response: Response = await request(application).delete(`/columns/${savedColumn.id}`);
 
-            const savedColumn: BoardColumn = await BoardColumnRepository.save(columnToUpdate);
+      expect(response.status).toBe(204);
+    });
 
-            const response: Response = await request(application).put(`/columns/${savedColumn.id}`).send({ columnName: 'updated-column-name' });
+    it('should delete column from database', async () => {
+      const columnToDelete: BoardColumn = new BoardColumn();
+      columnToDelete.columnName = 'origional-column-name';
 
-            expect(response.status).toBe(200);
-            const columnInDatabase: BoardColumn | null = await BoardColumnRepository.findOne({ where: { id: savedColumn.id } });
-            expect(columnInDatabase).toBeDefined();
-            expect(columnInDatabase?.columnName).toEqual('updated-column-name');
-        })
+      const savedColumn: BoardColumn = await BoardColumnRepository.save(columnToDelete);
+      const response: Response = await request(application).delete(`/columns/${savedColumn.id}`);
 
-    })
-
-    describe('delete column', () => {
-
-        beforeEach(async () => {
-            await prepareDataSource(dataSource);
-        });
-
-        afterAll(async () => {
-            server.close();
-            await teardownDataSource(dataSource);
-        });
-
-        it('should return 404 if column is not found', async () => {
-            const id: string = 'a6361ac6-2ea0-4f66-98ee-0eea80ff3e73';
-            const response: Response = await request(application).delete(`/columns/${id}`).send({ columnName: 'test-column-name' })
-
-            expect(response.status).toBe(404);
-            expect(response.body).toEqual(`Column with id '${id}' not found`);
-        })
-
-        it('should return 204 NO CONTENT if request is deleted successfully', async () => {
-            const columnToDelete: BoardColumn = new BoardColumn();
-            columnToDelete.columnName = 'origional-column-name';
-
-            const savedColumn: BoardColumn = await BoardColumnRepository.save(columnToDelete);
-            const response: Response = await request(application).delete(`/columns/${savedColumn.id}`);
-
-            expect(response.status).toBe(204);
-        })
-
-        it('should delete column from database', async () => {
-            const columnToDelete: BoardColumn = new BoardColumn();
-            columnToDelete.columnName = 'origional-column-name';
-
-            const savedColumn: BoardColumn = await BoardColumnRepository.save(columnToDelete);
-            const response: Response = await request(application).delete(`/columns/${savedColumn.id}`);
-
-            expect(response.status).toBe(204);
-            const columnInDatabase: BoardColumn | null = await BoardColumnRepository.findOne({ where: { id: savedColumn.id } });
-            expect(columnInDatabase).toBeFalsy();
-        })
-
-    })
-
-})
+      expect(response.status).toBe(204);
+      const columnInDatabase: BoardColumn | null = await BoardColumnRepository.findOne({
+        where: { id: savedColumn.id },
+      });
+      expect(columnInDatabase).toBeFalsy();
+    });
+  });
+});
