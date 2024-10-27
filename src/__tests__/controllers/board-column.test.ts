@@ -182,9 +182,7 @@ describe('Board Column', () => {
 
     it('should return 404 if column is not found', async () => {
       const id: string = 'a6361ac6-2ea0-4f66-98ee-0eea80ff3e73';
-      const response: Response = await request(application)
-        .delete(`/columns/${id}`)
-        .send({ columnName: 'test-column-name' });
+      const response: Response = await request(application).delete(`/columns/${id}`);
 
       expect(response.status).toBe(404);
       expect(response.body).toEqual(`Column with id '${id}' not found`);
