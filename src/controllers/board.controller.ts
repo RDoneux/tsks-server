@@ -8,6 +8,7 @@ const boardController = Router();
 
 boardController.get('/', getAllBoards);
 boardController.get('/:id', getBoardById);
+boardController.get('/columns/:id', getBoardColumns);
 boardController.post('/', createBoard);
 boardController.put('/:id', updateBoard);
 boardController.delete('/:id', deleteBoard);
@@ -25,6 +26,23 @@ async function getBoardById(request: Request, response: Response) {
   try {
     const id: string = request.params['id'];
     const result: Board | null = await BoardRepository.findOne({ where: { id } });
+    if (!result) {
+      response.status(404).json(`Board with id '${id}' not found`);
+      return;
+    }
+    response.status(200).json(result);
+  } catch (error) {
+    response.status(500).json(error);
+  }
+}
+
+async function getBoardColumns(request: Request, response: Response) {
+  try {
+    const id: string = request.params['id'];
+    const result: Board | null = await BoardRepository.findOne({
+      where: { id },
+      relations: ['columns'],
+    });
     if (!result) {
       response.status(404).json(`Board with id '${id}' not found`);
       return;

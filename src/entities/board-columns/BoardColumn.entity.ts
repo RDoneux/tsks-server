@@ -9,7 +9,7 @@ export default class BoardColumn extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @ManyToOne(() => Board, (board) => board.columns, { cascade: true })
+  @ManyToOne(() => Board, (board) => board.columns)
   @JoinColumn({ name: 'board_id' })
   board!: Board;
 

@@ -4,6 +4,7 @@ import { dataSource } from '../../globals/data-source';
 import { prepareDataSource, teardownDataSource } from '../../globals/test-utils';
 import Board from '../../entities/board/board.entity';
 import { BoardRepository } from '../../repositories/board.repository';
+import BoardColumn from '../../entities/board-columns/BoardColumn.entity';
 
 describe('Board', () => {
   describe('Get all boards', () => {
@@ -69,6 +70,53 @@ describe('Board', () => {
       const returnedBoard: Board = response.body;
       expect(returnedBoard.id).toEqual(savedBoard.id);
       expect(returnedBoard.boardName).toEqual(savedBoard.boardName);
+    });
+  });
+
+  describe('get board columns', () => {
+    beforeEach(async () => {
+      await prepareDataSource(dataSource);
+    });
+
+    afterAll(async () => {
+      server.close();
+      await teardownDataSource(dataSource);
+    });
+
+    it('should return 404 NOT FOUND if board is not in database', async () => {
+      const id: string = '256e492a-34b0-4f54-8d7d-f7a37ea183e1';
+      const response: Response = await request(application).get(`/boards/columns/${id}`);
+
+      expect(response.status).toBe(404);
+      expect(response.body).toEqual(`Board with id '${id}' not found`);
+    });
+
+    it('should return 200 OK with empty column array if there are no related columns', async () => {
+      const testBoard: Board = new Board();
+      testBoard.boardName = 'test-board';
+
+      const savedBoard: Board = await BoardRepository.save(testBoard);
+      const response: Response = await request(application).get(`/boards/columns/${savedBoard.id}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.columns.length).toBe(0);
+    });
+
+    it('should return 200 OK with column array if there are related columns', async () => {
+      const relatedColumn: BoardColumn = new BoardColumn();
+      relatedColumn.columnName = 'test-column-name';
+
+      const testBoard: Board = new Board();
+      testBoard.boardName = 'test-board';
+      testBoard.columns = [relatedColumn];
+
+      const savedBoard: Board = await BoardRepository.save(testBoard);
+
+      const response: Response = await request(application).get(`/boards/columns/${savedBoard.id}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.columns.length).toBe(1);
+      expect(response.body.columns[0].columnName).toEqual(relatedColumn.columnName);
     });
   });
 
