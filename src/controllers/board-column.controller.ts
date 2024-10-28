@@ -8,6 +8,7 @@ const boardColumnController = Router();
 
 boardColumnController.get('/', getAllColumns);
 boardColumnController.get('/:id', getColumnById);
+boardColumnController.get('/tickets/:id', getColumnTickets);
 boardColumnController.post('/', createColumn);
 boardColumnController.put('/:id', updateColumn);
 boardColumnController.delete('/:id', deleteColumn);
@@ -29,6 +30,25 @@ async function getColumnById(request: Request, response: Response) {
       response.status(404).json(`Column with id '${id}' not found`);
       return;
     }
+    response.status(200).json(result);
+  } catch (error) {
+    response.status(500).json(error);
+  }
+}
+
+async function getColumnTickets(request: Request, response: Response) {
+  try {
+    const id: string = request.params['id'];
+    const result: BoardColumn | null = await BoardColumnRepository.findOne({
+      where: { id },
+      relations: ['tickets'],
+    });
+
+    if (!result) {
+      response.status(404).json(`Column with id '${id}' not found`);
+      return;
+    }
+
     response.status(200).json(result);
   } catch (error) {
     response.status(500).json(error);

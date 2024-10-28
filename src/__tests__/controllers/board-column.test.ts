@@ -4,6 +4,7 @@ import { prepareDataSource, teardownDataSource } from '../../globals/test-utils'
 import { dataSource } from '../../globals/data-source';
 import BoardColumn from '../../entities/board-columns/BoardColumn.entity';
 import { BoardColumnRepository } from '../../repositories/board-column.repository';
+import Ticket from '../../entities/ticket/ticket.entity';
 
 describe('Board Column', () => {
   describe('get all columns', () => {
@@ -66,6 +67,58 @@ describe('Board Column', () => {
       const result: BoardColumn = response.body;
       expect(result.id).toEqual(savedColumn.id);
       expect(result.columnName).toEqual(savedColumn.columnName);
+    });
+  });
+
+  describe('get column tickets', () => {
+    beforeEach(async () => {
+      await prepareDataSource(dataSource);
+    });
+
+    afterAll(async () => {
+      server.close();
+      await teardownDataSource(dataSource);
+    });
+
+    it('should return 404 NOT FOUND if column is not in database', async () => {
+      const id: string = 'd27c1c5e-cb79-4a54-a250-0fd285732b74';
+      const response: Response = await request(application).get(`/columns/tickets/${id}`);
+
+      expect(response.status).toBe(404);
+      expect(response.body).toEqual(`Column with id '${id}' not found`);
+    });
+
+    it('should return 200 OK with empty ticket array if there are no related tickets', async () => {
+      const testColumn: BoardColumn = new BoardColumn();
+      testColumn.columnName = 'test-column';
+
+      const savedColumn: BoardColumn = await BoardColumnRepository.save(testColumn);
+      const response: Response = await request(application).get(
+        `/columns/tickets/${savedColumn.id}`
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body.tickets.length).toBe(0);
+    });
+
+    it('should return 200 OK with ticket array if there are related tickets', async () => {
+      const relatedTicket: Ticket = new Ticket();
+      relatedTicket.ticketName = 'test-ticket-name';
+      relatedTicket.priority = 'critical';
+
+      const testColumn: BoardColumn = new BoardColumn();
+      testColumn.columnName = 'test-column-name';
+      testColumn.tickets = [relatedTicket];
+
+      const savedColumn: BoardColumn = await BoardColumnRepository.save(testColumn);
+      const response: Response = await request(application).get(
+        `/columns/tickets/${savedColumn.id}`
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body.tickets.length).toBe(1);
+      expect(response.body.tickets[0].ticketName).toEqual(relatedTicket.ticketName);
+      expect(response.body.tickets[0].priority).toEqual(relatedTicket.priority);
     });
   });
 

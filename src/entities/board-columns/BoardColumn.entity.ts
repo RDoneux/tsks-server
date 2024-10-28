@@ -13,7 +13,7 @@ export default class BoardColumn extends BaseEntity {
   @JoinColumn({ name: 'board_id' })
   board!: Board;
 
-  @OneToMany(() => Ticket, (ticket) => ticket.column)
+  @OneToMany(() => Ticket, (ticket) => ticket.column, { cascade: true })
   tickets!: Ticket[];
 
   @Column({ name: 'column_name', type: 'varchar' })
