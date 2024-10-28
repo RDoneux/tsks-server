@@ -1,7 +1,9 @@
 import { application, server } from '../..';
+import BoardColumn from '../../entities/board-columns/BoardColumn.entity';
 import Ticket from '../../entities/ticket/ticket.entity';
 import { dataSource } from '../../globals/data-source';
 import { prepareDataSource, teardownDataSource } from '../../globals/test-utils';
+import { BoardColumnRepository } from '../../repositories/board-column.repository';
 import { TicketRepository } from '../../repositories/ticket.repository';
 import request, { Response } from 'supertest';
 
@@ -195,6 +197,89 @@ describe('Ticket', () => {
       });
       expect(ticketInDatabase).toBeDefined();
       expect(ticketInDatabase?.ticketName).toEqual('updated-ticket-name');
+    });
+  });
+
+  describe('move ticket', () => {
+    beforeEach(async () => {
+      await prepareDataSource(dataSource);
+    });
+
+    afterAll(async () => {
+      server.close();
+      await teardownDataSource(dataSource);
+    });
+
+    it('should return 400 MALFORMED REQUEST if ticket id is not supplied', async () => {
+      const response: Response = await request(application)
+        .put('/tickets/move')
+        .send({ destinationColumnId: '171c8586-0ff9-4a1e-a00a-83aa0a47682c' });
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual('ticketId is required');
+    });
+
+    it('should return 400 MALFORMED REQUEST if destinationColumnId is not supplied', async () => {
+      const response: Response = await request(application)
+        .put('/tickets/move')
+        .send({ ticketId: '976f8599-1bc6-498b-ab06-edee768af533' });
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual('destinationColumnId is required');
+    });
+
+    it('should return 404 NOT FOUND if ticket is not within database', async () => {
+      const ticketId: string = 'b3c77ff7-aa51-4b46-a890-1e131083260f';
+
+      const response: Response = await request(application)
+        .put('/tickets/move')
+        .send({ destinationColumnId: 'd1822531-15a0-441f-a957-b36cce563c14', ticketId });
+      expect(response.status).toBe(404);
+      expect(response.body).toEqual(`Ticket with id '${ticketId}' not found`);
+    });
+
+    it('should return 404 NOT FOUND if column is not within database', async () => {
+      const ticketToSave: Ticket = new Ticket();
+      ticketToSave.ticketName = 'test-ticket-name';
+      ticketToSave.priority = 'critical';
+
+      const savedTicket: Ticket = await TicketRepository.save(ticketToSave);
+      const ticketId: string = savedTicket.id;
+      const destinationColumnId: string = '048a1ad8-2920-4771-82f3-345545f59711';
+
+      const response: Response = await request(application)
+        .put('/tickets/move')
+        .send({ destinationColumnId, ticketId });
+
+      expect(response.status).toBe(404);
+      expect(response.body).toEqual(`Column with id '${destinationColumnId}' not found`);
+    });
+
+    it('should save ticket to new column', async () => {
+      const ticketToSave: Ticket = new Ticket();
+      ticketToSave.ticketName = 'test-ticket-name';
+      ticketToSave.priority = 'critical';
+
+      const savedTicket: Ticket = await TicketRepository.save(ticketToSave);
+      const ticketId: string = savedTicket.id;
+
+      const origionalColumnToSave: BoardColumn = new BoardColumn();
+      origionalColumnToSave.columnName = 'test-origional-column-name';
+      origionalColumnToSave.tickets = [savedTicket];
+
+      await BoardColumnRepository.save(origionalColumnToSave);
+
+      const destinationColumnToSave: BoardColumn = new BoardColumn();
+      destinationColumnToSave.columnName = 'test-destination-column-name';
+
+      const savedDestinationColumn: BoardColumn =
+        await BoardColumnRepository.save(destinationColumnToSave);
+      const destinationColumnId: string = savedDestinationColumn.id;
+
+      const response: Response = await request(application)
+        .put('/tickets/move')
+        .send({ destinationColumnId, ticketId });
+
+      expect(response.status).toBe(200);
+      expect(response.body.column.id).toEqual(destinationColumnId);
     });
   });
 

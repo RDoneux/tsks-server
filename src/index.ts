@@ -23,8 +23,8 @@ let PORT = process.env.PORT || 4000;
 if (environment === 'test') PORT = 4001;
 
 // middleware
-application.use(logger);
 application.use(express.json());
+application.use(logger);
 
 // controllers
 application.use(actuatorController);
