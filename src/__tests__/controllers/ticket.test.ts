@@ -94,6 +94,15 @@ describe('Ticket', () => {
       );
     });
 
+    it('should return 400 MALFORMED REQUEST if request is missing a body', async () => {
+      const response: Response = await request(application).post('/tickets');
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual(
+        'Creating a Ticket requires the following mandatory fields: ticketName, priority'
+      );
+    });
+
     it('should return 201 CREATED if ticket is created successfully', async () => {
       const ticketToSave: Ticket = new Ticket();
       ticketToSave.ticketName = 'test-ticket-name';
@@ -143,6 +152,14 @@ describe('Ticket', () => {
 
       expect(response.status).toBe(404);
       expect(response.body).toEqual(`Ticket with id '${id}' not found`);
+    });
+
+    it('should return 400 MALFORMED REQUEST if no request body is sent', async () => {
+      const id: string = '4b6c0b48-7a48-4db6-96dc-47bc21429156';
+      const response: Response = await request(application).put(`/tickets/${id}`);
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual(`Please specify a request body`);
     });
 
     it('should return 200 OK with updated result and ticket information', async () => {

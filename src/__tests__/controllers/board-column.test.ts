@@ -141,6 +141,15 @@ describe('Board Column', () => {
       );
     });
 
+    it('should return 400 MALFORMED REQUEST if request is missing a body', async () => {
+      const response: Response = await request(application).post('/columns');
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual(
+        'Creating a Column requires the following mandatory fields: columnName'
+      );
+    });
+
     it('should return 201 CREATED if column is created successfully', async () => {
       const columnToSave: BoardColumn = new BoardColumn();
       columnToSave.columnName = 'test-column-name';
@@ -186,6 +195,14 @@ describe('Board Column', () => {
 
       expect(response.status).toBe(404);
       expect(response.body).toEqual(`Column with id '${id}' not found`);
+    });
+
+    it('should return 400 MALFORMED REQUEST if no request body is sent', async () => {
+      const id: string = '6707ee77-900c-4973-bac9-a90a02256d81';
+      const response: Response = await request(application).put(`/columns/${id}`);
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual(`Please specify a request body`);
     });
 
     it('should return 200 OK with update result and update column information', async () => {

@@ -75,6 +75,11 @@ async function createBoard(request: Request, response: Response) {
 async function updateBoard(request: Request, response: Response) {
   try {
     const id: string = request.params['id'];
+    if (!Object.keys(request.body).length) {
+      response.status(400).json('Please specify a request body');
+      return;
+    }
+
     const updateResult: UpdateResult = await BoardRepository.update(id, request.body);
 
     if (!updateResult.affected) {

@@ -140,6 +140,15 @@ describe('Board', () => {
       );
     });
 
+    it('should return 400 MALFORMED REQUEST if request is missing a body', async () => {
+      const response: Response = await request(application).post('/boards');
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual(
+        'Creating a Board requires the following mandatory fields: boardName'
+      );
+    });
+
     it('should return 201 CREATED with created board if created successfully', async () => {
       const response: Response = await request(application)
         .post('/boards')
@@ -178,6 +187,14 @@ describe('Board', () => {
         .send({ boardName: 'updated-board-name' });
       expect(response.status).toBe(404);
       expect(response.body).toEqual(`Board with id '${id}' not found`);
+    });
+
+    it('should return 400 MALFORMED REQUEST if no request body is sent', async () => {
+      const id: string = '4b6c0b48-7a48-4db6-96dc-47bc21429156';
+      const response: Response = await request(application).put(`/boards/${id}`);
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual(`Please specify a request body`);
     });
 
     it('should return 200 OK with updated board values if board updated successfully', async () => {

@@ -76,7 +76,12 @@ async function createColumn(request: Request, response: Response) {
 async function updateColumn(request: Request, response: Response) {
   try {
     const id: string = request.params['id'];
-    const updateResult: UpdateResult = await BoardColumnRepository.update(id, request.body);
+    if (!Object.keys(request.body).length) {
+      response.status(400).json('Please specify a request body');
+      return;
+    }
+
+    const updateResult: UpdateResult = await BoardColumnRepository.update(id, request?.body);
 
     if (!updateResult.affected) {
       response.status(404).json(`Column with id '${id}' not found`);

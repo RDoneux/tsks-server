@@ -58,6 +58,11 @@ async function createTicket(request: Request, response: Response) {
 async function updateTicket(request: Request, response: Response) {
   try {
     const id: string = request.params['id'];
+    if (!Object.keys(request.body).length) {
+      response.status(400).json('Please specify a request body');
+      return;
+    }
+
     const updateResult: UpdateResult = await TicketRepository.update(id, request.body);
 
     if (!updateResult.affected) {
