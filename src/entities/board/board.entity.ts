@@ -12,7 +12,7 @@ export default class Board extends BaseEntity {
   @Required()
   boardName!: string;
 
-  @OneToMany(() => BoardColumn, (boardColumn) => boardColumn.board)
+  @OneToMany(() => BoardColumn, (boardColumn) => boardColumn.board, { cascade: true })
   columns!: BoardColumn[];
 
   @Column({ name: 'created_at', type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
