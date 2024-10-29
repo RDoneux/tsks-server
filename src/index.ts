@@ -10,6 +10,8 @@ import exampleController from './controllers/example.controller';
 import boardController from './controllers/board.controller';
 import boardColumnController from './controllers/board-column.controller';
 import ticketController from './controllers/ticket.controller';
+import authenticate from './middleware/authentication';
+import authController from './controllers/auth.controller';
 
 export const environment = process.env.NODE_ENV || 'development';
 console.log(
@@ -25,6 +27,12 @@ if (environment === 'test') PORT = 4001;
 // middleware
 application.use(express.json());
 application.use(logger);
+application.use('/auth', authController);
+
+// turn authentication off for testing
+if (environment !== 'test') {
+  application.use(authenticate);
+}
 
 // controllers
 application.use(actuatorController);
