@@ -4,7 +4,7 @@ pipeline {
 
     environment {
         PORT=4000
-        DOCKER_IMAGE = 'rdoneux/templates'
+        DOCKER_IMAGE = 'rdoneux/tasks'
     }
 
     stages {
