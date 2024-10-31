@@ -91,7 +91,7 @@ describe('auth controller', () => {
     });
 
     it('should return 400 MALFORMED REQUEST if refreshToken is not supplied', async () => {
-      const response: Response = await request(application).get('/auth/refresh');
+      const response: Response = await request(application).post('/auth/refresh');
       expect(response.status).toBe(400);
       expect(response.body).toEqual('refreshToken is required');
     });
@@ -102,7 +102,7 @@ describe('auth controller', () => {
       });
 
       const response: Response = await request(application)
-        .get('/auth/refresh')
+        .post('/auth/refresh')
         .send({ refreshToken: 'test-refresh-token' });
 
       expect(axios.post).toHaveBeenCalledWith(

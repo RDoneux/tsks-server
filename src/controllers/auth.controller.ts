@@ -12,7 +12,7 @@ const CLIENT_SECRET = process.env.KEYCLOAK_CLIENT_SECRET ?? '';
 const URL_ENCODED_HEADER = { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } };
 
 authController.get('/login', login);
-authController.get('/refresh', refreshToken);
+authController.post('/refresh', refreshToken);
 
 async function login(request: Request, response: Response) {
   try {
@@ -46,6 +46,10 @@ async function login(request: Request, response: Response) {
 
     response.status(200).json(tokenResponse.data);
   } catch (error) {
+    if (axios.isAxiosError(error)) {
+      response.status(error.status ?? 500).json(error);
+      return;
+    }
     response.status(500).json(error);
   }
 }
@@ -69,8 +73,13 @@ async function refreshToken(request: Request, response: Response) {
       }).toString(),
       URL_ENCODED_HEADER
     );
+
     response.status(200).json(tokenResponse.data);
   } catch (error) {
+    if (axios.isAxiosError(error)) {
+      response.status(error.status ?? 500).json(error);
+      return;
+    }
     response.status(500).json(error);
   }
 }

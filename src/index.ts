@@ -12,6 +12,7 @@ import boardColumnController from './controllers/board-column.controller';
 import ticketController from './controllers/ticket.controller';
 import authenticate from './middleware/authentication';
 import authController from './controllers/auth.controller';
+import cors from 'cors';
 
 export const environment = process.env.NODE_ENV || 'development';
 console.log(
@@ -25,6 +26,16 @@ let PORT = process.env.PORT || 4000;
 if (environment === 'test') PORT = 4001;
 
 // middleware
+application.use(
+  cors({
+    origin: [
+      'http://localhost:5173',
+      /^http:\/\/.*:\d+$/, // Allows any subdomain or host with port 5173
+    ],
+    methods: '*',
+    credentials: true,
+  })
+);
 application.use(express.json());
 application.use(logger);
 application.use('/auth', authController);
