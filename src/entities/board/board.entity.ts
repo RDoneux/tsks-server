@@ -25,4 +25,6 @@ export default class Board extends BaseEntity {
     onUpdate: 'CURRENT_TIMESTAMP',
   })
   updatedAt!: Date;
+
+  columnCount!: number;
 }
