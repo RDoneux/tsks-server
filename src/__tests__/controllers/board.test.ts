@@ -39,13 +39,12 @@ describe('Board', () => {
     });
 
     it('should return 200 OK with boards and column count', async () => {
-
       const testColumn: BoardColumn = new BoardColumn();
-      testColumn.columnName = 'test-column'
+      testColumn.columnName = 'test-column';
 
       const testBoard: Board = new Board();
       testBoard.boardName = 'test-board';
-      testBoard.columns = [testColumn]
+      testBoard.columns = [testColumn];
 
       const savedBoard: Board = await BoardRepository.save(testBoard);
       const response: Response = await request(application).get('/boards');
@@ -56,8 +55,7 @@ describe('Board', () => {
       expect(body[0].boardName).toBe(savedBoard.boardName);
       expect(body[0].id).toBe(savedBoard.id);
       expect(body[0].columnCount).toBe(1);
-
-    })
+    });
   });
 
   describe('Get boards by id', () => {

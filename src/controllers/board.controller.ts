@@ -15,11 +15,10 @@ boardController.delete('/:id', deleteBoard);
 
 async function getAllBoards(request: Request, response: Response) {
   try {
-    const results: Board[] = await BoardRepository
-      .createQueryBuilder('boards')
-      .leftJoinAndSelect('boards.columns', "columns")
+    const results: Board[] = await BoardRepository.createQueryBuilder('boards')
+      .leftJoinAndSelect('boards.columns', 'columns')
       .loadRelationCountAndMap('boards.columnCount', 'boards.columns')
-      .getMany()
+      .getMany();
     response.status(200).json(results);
   } catch (error) {
     response.status(500).json(error);
